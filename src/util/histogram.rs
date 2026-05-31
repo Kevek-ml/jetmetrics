@@ -66,11 +66,15 @@ impl Histogram {
         let mut counts = vec![0u64; n_bins];
 
         for val in values.iter().flatten() {
+            // NaN is a valid non-null value in Arrow but has no bin. Skip it.
+            if val.is_nan() {
+                continue;
+            }
             // Fractional position in [0, n_bins]. Using division by range avoids
             // progressive drift from repeated bin_width multiplication.
             let frac = (val - min) / (max - min) * n_bins as f64;
-            // Clamp: values exactly at max map to n_bins (out of bounds), pulled back.
-            // Values below min clamp to 0.
+            // Saturating cast: values below min produce negative frac → 0 (Rust 1.45+).
+            // Values at or above max produce frac >= n_bins → clamped to n_bins - 1.
             let idx = (frac as usize).min(n_bins - 1);
             counts[idx] += 1;
         }
@@ -211,6 +215,14 @@ mod tests {
         // shared_edges returns (3.0, 3.0) for constant arrays
         let (min, max) = shared_edges(&a, &b).unwrap();
         assert_eq!(min, max);
+    }
+
+    #[test]
+    fn test_nan_values_are_skipped() {
+        let a = f64_array(&[1.0, f64::NAN, 3.0]);
+        let hist = Histogram::build(&a, 5, 0.0, 5.0).unwrap();
+        // NaN must not be counted — only 2 valid values
+        assert_eq!(hist.counts.iter().sum::<u64>(), 2);
     }
 
     #[test]
