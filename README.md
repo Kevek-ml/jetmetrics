@@ -12,7 +12,7 @@ Compute drift, performance, and statistical metrics with zero-copy interchange u
 
 **jetmetrics** is the first infrastructure-grade metrics library that doesn't force a conversion boundary:
 - **Arrow-native interface** — accepts PyArrow arrays directly, zero-copy from any Arrow-speaking framework
-- **Rust core** — SIMD, no GC, single `.so` binary, accurate p-values
+- **Rust core** — memory-safe, no GC, single `.so` binary, accurate p-values
 - **Streaming accumulators** — designed from day one for out-of-core computation
 - **Accuracy-first** — all p-values validated to 8 decimal places, bitwise-reproducible results
 
@@ -28,24 +28,30 @@ Compute drift, performance, and statistical metrics with zero-copy interchange u
 
 ## Architecture
 
-- **Language**: Rust (memory-safe, SIMD, no GC overhead)
+- **Language**: Rust (memory-safe, no GC overhead)
 - **Core**: arrow-rs (Apache Arrow Rust implementation)
 - **Bindings**: PyO3 + maturin for Python FFI
 - **Streaming**: Accumulator trait from day one for out-of-core computation (v0.2+)
 
 See [docs/research/architecture-design-2026.md](docs/research/architecture-design-2026.md) for full technical design.
 
-## Performance Targets
+## Performance
 
-| Metric | Scale | Expected Speedup |
-|---|---|---|
-| PSI | n=10k | 5-10× |
-| Wasserstein | n=10k | 2-3× |
-| KS test | n=10k | 3-5× |
-| AUC | n=10k | 2-4× |
-| t-test | n=10k | 2-3× |
+The performance advantage of jetmetrics is conditional on your data format:
 
-*Speedup is highest at n >= 10k with Arrow zero-copy. At typical monitoring window sizes (n=100–1k), gain is modest.*
+**Arrow-native users** (Polars, pandas 2.0 Arrow backend): jetmetrics accepts your data zero-copy. Reference implementations require a full array copy and type conversion before computation — at n=10k that conversion cost often exceeds the computation itself. Expected end-to-end speedup: **3-10× depending on metric**.
+
+**Existing numpy users**: there is no raw computation speedup. jetmetrics is not a faster algorithm for numpy arrays — it is a boundary-free alternative for users who are already in the Arrow ecosystem.
+
+| Metric | Source of speedup |
+|---|---|
+| PSI, Hellinger, TVD, JS | Eliminated Arrow→numpy conversion (histogram loop itself is sequential) |
+| Wasserstein | Eliminated conversion; sort cost is O(n log n) in both |
+| KS test | Eliminated conversion + faster special function evaluation in Rust |
+| AUC | Eliminated conversion; sort + trapezoid rule comparable |
+| t-test | Eliminated conversion; Welford's algorithm comparable |
+
+*All figures are estimates pending benchmarks. Actual speedup depends on array size, null density, and whether data is already in Arrow format.*
 
 ## Timeline
 
