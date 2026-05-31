@@ -1,0 +1,25 @@
+[package]
+name = "jetmetrics"
+version = "0.1.0"
+edition = "2021"
+authors = ["Kevek ML"]
+license = "Apache-2.0"
+description = "Arrow-native, Rust-based statistical metrics for ML monitoring"
+repository = "https://github.com/Kevek-ml/jetmetrics"
+
+[dependencies]
+arrow = "52.0"
+arrow-compute = "52.0"
+pyo3 = { version = "0.21", features = ["abi3"] }
+statrs = "0.17"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[lib]
+name = "jetmetrics"
+crate-type = ["cdylib"]
+
+[[bench]]
+name = "scipy_validation"
+harness = false
