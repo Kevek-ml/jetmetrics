@@ -8,9 +8,8 @@ description = "Arrow-native, Rust-based statistical metrics for ML monitoring"
 repository = "https://github.com/Kevek-ml/jetmetrics"
 
 [dependencies]
-arrow = "52.0"
-arrow-compute = "52.0"
-pyo3 = { version = "0.21", features = ["abi3"] }
+arrow = "53.0"
+pyo3 = { version = "0.28", features = ["abi3"] }
 statrs = "0.17"
 
 [dev-dependencies]
