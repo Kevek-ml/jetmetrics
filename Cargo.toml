@@ -9,7 +9,7 @@ repository = "https://github.com/Kevek-ml/jetmetrics"
 
 [dependencies]
 arrow = "53.0"
-pyo3 = { version = "0.28", features = ["abi3"] }
+pyo3 = { version = "0.28", features = ["abi3-py310"] }
 statrs = "0.17"
 
 [dev-dependencies]
