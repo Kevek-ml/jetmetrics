@@ -33,7 +33,6 @@ Compute drift, performance, and statistical metrics with zero-copy interchange u
 - **Bindings**: PyO3 + maturin for Python FFI
 - **Streaming**: Accumulator trait from day one for out-of-core computation (v0.2+)
 
-See [docs/research/architecture-design-2026.md](docs/research/architecture-design-2026.md) for full technical design.
 
 ## Performance
 
